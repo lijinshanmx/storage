@@ -126,14 +126,6 @@ class S3 extends Device
         return 'S3 Storage';
     }
 
-    public function getPathPrefix(): string
-    {
-        if (str_starts_with($this->getName(), 'QiNiu')) {
-            return '';
-        }
-        return '/';
-    }
-
     /**
      * @return string
      */
@@ -213,7 +205,7 @@ class S3 extends Device
      */
     protected function createMultipartUpload(string $path, string $contentType): string
     {
-        $uri = $path !== '' ? $this->getPathPrefix() . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
+        $uri = $path !== '' ? '/' . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
 
         $this->headers['content-md5'] = \base64_encode(md5('', true));
         unset($this->amzHeaders['x-amz-content-sha256']);
@@ -237,7 +229,7 @@ class S3 extends Device
      */
     protected function uploadPart(string $source, string $path, int $chunk, string $uploadId) : string
     {
-        $uri = $path !== '' ? $this->getPathPrefix() . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
+        $uri = $path !== '' ? '/' . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
         
         $data = \file_get_contents($source);
         $this->headers['content-type'] = \mime_content_type($source);
@@ -266,7 +258,7 @@ class S3 extends Device
      */
     protected function completeMultipartUpload(string $path, string $uploadId, array $parts): bool
     {
-        $uri = $path !== '' ? $this->getPathPrefix() . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
+        $uri = $path !== '' ? '/' . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
 
         $body = '<CompleteMultipartUpload>';
         foreach ($parts as $part) {
@@ -292,7 +284,7 @@ class S3 extends Device
      */
     public function abort(string $path, string $extra = ''): bool
     {
-        $uri = $path !== '' ? $this->getPathPrefix() . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
+        $uri = $path !== '' ? '/' . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
         unset($this->headers['content-type']);
         $this->headers['content-md5'] = \base64_encode(md5('', true));
         $this->call(self::METHOD_DELETE, $uri, '', ['uploadId' => $extra]);
@@ -316,7 +308,7 @@ class S3 extends Device
         unset($this->amzHeaders['x-amz-content-sha256']);
         unset($this->headers['content-type']);
         $this->headers['content-md5'] = \base64_encode(md5('', true));
-        $uri = ($path !== '') ? $this->getPathPrefix() . \str_replace('%2F', '/', \rawurlencode($path)) : '/';
+        $uri = ($path !== '') ? '/' . \str_replace('%2F', '/', \rawurlencode($path)) : '/';
         if($length !== null) {
             $end = $offset + $length - 1;
             $this->headers['range'] = "bytes=$offset-$end";
@@ -337,7 +329,7 @@ class S3 extends Device
      */
     public function write(string $path, string $data, string $contentType = ''): bool
     {
-        $uri = $path !== '' ? $this->getPathPrefix() . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
+        $uri = $path !== '' ? '/' . \str_replace(['%2F', '%3F'], ['/', '?'], \rawurlencode($path)) : '/';
         
         $this->headers['content-type'] = $contentType;
         $this->headers['content-md5'] = \base64_encode(md5($data, true)); //TODO whould this work well with big file? can we skip it?
@@ -385,7 +377,7 @@ class S3 extends Device
      */
     public function delete(string $path, bool $recursive = false): bool
     {
-        $uri = ($path !== '') ? $this->getPathPrefix() . \str_replace('%2F', '/', \rawurlencode($path)) : '/';
+        $uri = ($path !== '') ? '/' . \str_replace('%2F', '/', \rawurlencode($path)) : '/';
         
         unset($this->headers['content-type']);
         unset($this->amzHeaders['x-amz-acl']);
@@ -575,7 +567,7 @@ class S3 extends Device
         unset($this->amzHeaders['x-amz-acl']);
         unset($this->amzHeaders['x-amz-content-sha256']);
         $this->headers['content-md5'] = \base64_encode(md5('', true));
-        $uri = $path !== '' ? $this->getPathPrefix() . \str_replace('%2F', '/', \rawurlencode($path)) : '/';
+        $uri = $path !== '' ? '/' . \str_replace('%2F', '/', \rawurlencode($path)) : '/';
         $response = $this->call(self::METHOD_HEAD, $uri);
 
         return $response->headers;
